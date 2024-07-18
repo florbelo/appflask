@@ -1,0 +1,253 @@
+<!doctype html>
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><html lang="en" class="no-js"> <![endif]-->
+<html lang="en">
+<head>
+  <!-- Basic -->
+	<title>CLUB DEL TRUEQUE - ITEMS</title>
+    
+    <!-- Define Charset -->
+	<meta charset="utf-8">
+        
+    <!-- Responsive MetaTag -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <!-- Page Description and Author -->
+    <meta name="description" content="CLUB DEL TRUEQUE | LIBROS">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename= 'images/favicon.png') }}">
+
+    <!--url_for('static', filename='style.css')-->
+
+    <!-- Bootstrap CSS Styles -->
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"type="text/css" media="screen">
+    
+    <!-- Plugins CSS Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/plugins.css') }}" type="text/css" media="screen">
+  
+    <!-- Relway CSS Styles -->
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" media="screen">
+  
+    <!-- Responsive CSS Styles -->
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/responsive.css') }}" media="screen">
+    
+    <!-- Css3 Animations Styles -->
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/animate.css') }}" media="screen">
+  
+    <!-- Icons Font CSS Styles -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/icons.css') }}" media="screen">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" media="screen">
+    
+    <!-- Color CSS Styles -->
+	
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/colors/blue.css') }}" title="blue" media="screen">
+    
+    <!-- Custom CSS Styles -->
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}"media="screen"> 
+
+</head>   
+      
+<!-- Start Header -->
+<header id="header" class="header-1 dark-header">
+
+	<div class="container">
+    
+        <!-- Logo -->
+        <div id="logo">
+            <a href="/"><img alt="Club del Trueque" src="{{ url_for('static', filename='images/logo-clubdeltrueque1.png') }}" /></a>
+        </div>
+      
+    </div>
+
+</header>
+<!-- End Header -->
+
+<div class="container"style="padding-top:100px; padding-bottom:50px; background-color:#fff;">
+          
+    <div class="row">
+            
+        <div class="col-md-6 col-md-offset-3">
+            <!-- Title -->
+            <div class="section-title text-center">
+                <h2><strong>ITEMS</strong></h2>
+                <div class="button-box1">
+                    <a href="/create_item">Crear Item</a>
+                </div>
+            </div>
+            <!-- Space -->
+            <div class="hr" style="margin-bottom:50px;"></div>
+        </div>
+        
+    </div>
+
+<body>
+   <!-- <pre>{{ items | tojson(indent=2) }}</pre>-->
+    <table>
+        <thead>
+            <tr>
+                <th>ID Item</th>
+                <th>Categoria</th>
+                <th>Nombre</th>
+                <th>Detalle</th>
+                <!--<th>Usuario</th>-->
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+
+            <tr data-id_item="{{ item.id_item }}">
+                <td class="id_item">{{ item.id_item }}</td>
+                <td class="tipo_categoria">{{ item.tipo_categoria }}</td>
+                <td class="nombre">{{ item.nombre }}</td>
+                <td class="detalle">{{ item.detalle }}</td>
+                <td>
+                    <button class="edit-btn" onclick="editRow(this)">Edit</button>
+                    <button class="save-btn" style="display:none;" onclick="saveRow(this)">Save</button>
+                    <!--<button class="delete-btn" onclick="deleteRow({{item.id_item}})">Delete</button>-->
+                    <form action="{{ url_for('delete_item', id_item=item.id_item) }}" method="post" style="display:inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="delete-btn">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <script>
+        function editRow(button) {
+            var row = button.closest('tr');
+            row.classList.add('edit-mode');
+
+            var nombreCell = row.querySelector('.nombre');
+            var detalleCell = row.querySelector('.detalle');
+            var tipo_categoriaCell = row.querySelector('.tipo_categoria');
+
+            var nombre = nombreCell.textContent;
+            var detalle = detalleCell.textContent;
+            var tipo_categoria = tipo_categoriaCell.textContent;
+
+            nombreCell.innerHTML = '<input type="text" value="' + nombre + '">';
+            detalleCell.innerHTML = '<input type="text" value="' + detalle + '">';
+            tipo_categoriaCell.innerHTML = '<input type="text" value="' + tipo_categoria + '">';
+
+            button.style.display = 'none';
+            row.querySelector('.save-btn').style.display = 'inline-block';
+        }
+
+        function saveRow(button) {
+            var row = button.closest('tr');
+            row.classList.remove('edit-mode');
+
+            var id_item = row.getAttribute('data-id_item');
+            var nombre = row.querySelector('.nombre input').value;
+            var detalle = row.querySelector('.detalle input').value;
+            var tipo_categoria = row.querySelector('.tipo_categoria input').value;
+
+            fetch('/update_item/' + id_item, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nombre: nombre, detalle: detalle, tipo_categoria: tipo_categoria })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    row.querySelector('.nombre').textContent = nombre;
+                    row.querySelector('.detalle').textContent = detalle;
+                    row.querySelector('.tipo_categoria').textContent = tipo_categoria;
+
+                    button.style.display = 'none';
+                    row.querySelector('.edit-btn').style.display = 'inline-block';
+                } else {
+                    alert('Error updating item');
+                }
+            });
+        }
+
+        function deleteRow(id_item) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                fetch('/delete_item/' + id_item, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.querySelector('tr[data-id_item="' + id_item + '"]').remove();
+                    } else {
+                        alert('Error deleting item');
+                    }
+                });
+            }
+        }
+    </script>
+</body>   
+    <a href="/">Back to Home</a>
+</div>
+
+
+<!-- Start Footer -->
+<div id="footer" class="section footer-section light-section">
+    
+	<div class="container">
+    
+    	<div class="row">
+        
+        	<div class="col-md-12">
+                <!-- Footer Logo -->
+            	<div class="logo-img"><img alt="" src="{{ url_for('static', filename='images/logo-clubdeltrueque1.png') }}" /></div>
+                
+                <!-- Copyright -->
+                <div class="copyright">Todos los derechos reservado. Copyright © 2024.</div>
+                <!-- Social Icons -->
+                <div class="social-icons">
+                	<ul>
+                    	<li><a href="https://www.facebook.com"><i class="icon-facebook"></i></a></li>                  
+                        <li><a href="http://www.linkedin.com"><i class="icon-linkedin4"></i></a></li>
+                        <li><a href="https://www.instagram.comr"><i class="icon-instagram"></i></a></li>
+
+                    </ul>
+                </div>
+            </div>
+        
+        </div>
+    
+    </div>
+    
+</div>
+<!-- End Footer -->
+
+
+<!-- Main JS  -->
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.migrate.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/retina-1.1.0.min.j') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.outside-events.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.easing-1.3.pack.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.parallax.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/initmap.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.mb.YTPlayer.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/owl.carousel.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='twitter/jquery.tweet.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.appear.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.scrollTo.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.nav.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.fitvids.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.isotope.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/counter.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/imagesloaded.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/smooth-scroll.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/contact-form.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    
+</body>
+</html>
